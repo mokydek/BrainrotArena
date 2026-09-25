@@ -11,25 +11,23 @@
 
 ## Деплой (≈5 минут)
 
-1. **Supabase** → [supabase.com](https://supabase.com) → New project.
-2. **Vercel** → Add New → Project → импортируй репозиторий `BrainrotArena` (фреймворк определится сам — Next.js).
-3. В Vercel → Project → **Settings → Environment Variables** добавь:
+Адрес Supabase-проекта (`vuknddvhpwkyjvrypaql`) и его публичный anon-ключ уже вшиты в код, их задавать не нужно.
 
-   | Переменная | Где взять |
+1. **Таблицы в Supabase**: открой [SQL Editor](https://supabase.com/dashboard/project/vuknddvhpwkyjvrypaql/sql/new) → вставь всё содержимое [`supabase/schema.sql`](supabase/schema.sql) → **Run**. Скрипт можно запускать повторно — он ничего не ломает.
+2. **Vercel** → Add New → Project → импортируй репозиторий `BrainrotArena` (фреймворк определится сам — Next.js).
+3. Перед Deploy открой **Environment Variables** и добавь две переменные:
+
+   | Переменная | Значение |
    |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API → Project URL |
-   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | там же, `anon` / publishable key |
-   | `SUPABASE_SERVICE_ROLE_KEY` | там же, `service_role` / secret key |
+   | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API Keys → `service_role` (secret). Никому не отправляй, только в Vercel |
    | `ADMIN_PASSWORD` | придумай длинный пароль для админки |
-   | `POSTGRES_URL_NON_POOLING` *(необязательно)* | Supabase → Connect → строка подключения (нужна для кнопки «Создать таблицы») |
    | `CONTACT_URL` *(необязательно)* | ссылка для карточки «ТВОЙ СТРИМ ЗДЕСЬ» |
 
-   Проще всего: Vercel → Storage / Integrations → **Supabase** — интеграция сама создаст все переменные Supabase, останется добавить `ADMIN_PASSWORD`.
-4. **Deploy** (после добавления переменных — Redeploy).
-5. **Таблицы**: открой `https://твой-сайт/admin`, войди паролем и нажми **«Создать таблицы»**.
-   Или вручную: Supabase → SQL Editor → вставь содержимое [`supabase/schema.sql`](supabase/schema.sql) → Run. Скрипт можно запускать повторно — он ничего не ломает.
+4. **Deploy**. Если переменные добавил после деплоя — Deployments → Redeploy.
 
-Готово: заходишь на `/admin` → у лидербордов появляются «+», в центре — кнопка «Новый розыгрыш».
+Готово: заходишь на `https://твой-сайт/admin`, вводишь пароль → у лидербордов появляются «+», в центре — кнопка «Новый розыгрыш».
+
+Другой Supabase-проект: задай `NEXT_PUBLIC_SUPABASE_URL` и `NEXT_PUBLIC_SUPABASE_ANON_KEY` — переменные всегда важнее вшитых значений. Если добавить `POSTGRES_URL_NON_POOLING` (Supabase → Connect), таблицы можно создать кнопкой «Создать таблицы» в `/admin` вместо шага 1.
 
 ## Как это работает
 
