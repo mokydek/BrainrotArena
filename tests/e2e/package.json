@@ -1,0 +1,8 @@
+{
+  "name": "brainrot-arena-e2e",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "playwright": "1.56.0"
+  }
+}
