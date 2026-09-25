@@ -40,10 +40,20 @@ try {
   assert.equal(await admin.getByTestId("add-streamer-left").count(), 0, "no + for visitors");
   await admin.screenshot({ path: `${SHOTS}/01-empty.png` });
   step("Discord links + English by default (even for a Russian browser)");
-  for (const id of ["discord-top", "discord-card"]) {
-    assert.equal(await admin.getByTestId(id).getAttribute("href"), "https://discord.gg/nnnhQW3z54", id);
+  for (const [id, url] of [
+    ["discord-top", "https://discord.gg/mPEwsqbz35"],
+    ["discord-card", "https://discord.gg/mPEwsqbz35"],
+    ["telegram-top", "https://t.me/BrainrotArena"],
+    ["telegram-card", "https://t.me/BrainrotArena"],
+  ]) {
+    assert.equal(await admin.getByTestId(id).getAttribute("href"), url, id);
     assert.equal(await admin.getByTestId(id).getAttribute("target"), "_blank");
   }
+  assert.equal(await admin.getByTestId("panel-left").getByTestId("telegram-card").count(), 1, "Telegram on the left");
+  assert.equal(await admin.getByTestId("panel-right").getByTestId("discord-card").count(), 1, "Discord on the right");
+  await admin.getByTestId("online-count").filter({ hasText: /^\d+$/ }).waitFor();
+  const online0 = Number(await admin.getByTestId("online-count").textContent());
+  assert.ok(online0 >= 1, `online counter shows at least me (${online0})`);
   const ruCtx = await browser.newContext({ locale: "ru-RU", extraHTTPHeaders: { "Accept-Language": "ru-RU,ru;q=0.9" } });
   const ruPage = await ruCtx.newPage();
   await ruPage.goto(BASE);
@@ -114,7 +124,7 @@ try {
   await admin.getByTestId("contest-prize-input").fill("Skibidi Toilet");
   await admin.getByTestId("contest-conditions").fill("1. Follow @kazuhiko_mayuko on TikTok");
   await admin.getByTestId("add-discord-line").click();
-  assert.match(await admin.getByTestId("contest-conditions").inputValue(), /Follow @kazuhiko_mayuko on TikTok\nDiscord: https:\/\/discord\.gg\/nnnhQW3z54$/);
+  assert.match(await admin.getByTestId("contest-conditions").inputValue(), /Follow @kazuhiko_mayuko on TikTok\nDiscord: https:\/\/discord\.gg\/mPEwsqbz35$/);
   await admin.getByTestId("contest-image-file").setInputFiles(IMG);
   await admin.getByTestId("contest-image-preview").waitFor();
   await admin.getByRole("button", { name: "5m", exact: true }).click();
@@ -153,7 +163,7 @@ try {
   await p1.getByTestId("nick-save").click();
   await p1.getByTestId("nick-value").filter({ hasText: "SkibidiFan" }).waitFor();
   await p1.getByTestId("conditions").filter({ hasText: "Follow @kazuhiko_mayuko" }).waitFor();
-  assert.equal(await p1.getByTestId("conditions").locator("a").getAttribute("href"), "https://discord.gg/nnnhQW3z54");
+  assert.equal(await p1.getByTestId("conditions").locator("a").getAttribute("href"), "https://discord.gg/mPEwsqbz35");
   await p1.getByTestId("join-btn").click(); // not accepted yet -> blocked
   await p1.locator(".toast").filter({ hasText: /tick the box/i }).waitFor();
   assert.equal(await p1.getByTestId("join-sub").textContent(), "", "not joined without accepting conditions");
@@ -262,6 +272,10 @@ try {
   await admin.locator(".streamer-card.expired").waitFor();
   await p1.reload();
   assert.equal(await p1.getByTestId("panel-left").getByTestId("streamer-card").count(), 2);
+
+  step("online counter counts every open page (admin + 3 players)");
+  await admin.waitForFunction(() => Number(document.querySelector("[data-testid=online-count]")?.textContent) >= 4, null, { timeout: 30000 });
+  console.log(`  online: ${await admin.getByTestId("online-count").textContent()}`);
 
   console.log(errors.length ? `\nBROWSER ERRORS:\n${errors.join("\n")}` : "\nno browser errors");
   if (errors.length) process.exitCode = 1;

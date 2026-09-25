@@ -6,6 +6,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 import { DICTS, tr, type Lang } from "@/lib/i18n";
 import type { Player } from "@/lib/types";
 import Modal from "@/components/Modal";
+import { useOnline } from "@/components/useOnline";
 
 type Toast = { id: number; text: string; kind: "ok" | "err" };
 type ConfirmState = { text: string; resolve: (v: boolean) => void } | null;
@@ -24,6 +25,7 @@ type Ctx = {
   confirm: (text: string) => Promise<boolean>;
   focusNickname: () => void;
   registerNicknameFocus: (fn: () => void) => void;
+  online: number | null;
 };
 
 const AppCtx = createContext<Ctx | null>(null);
@@ -49,6 +51,7 @@ export function AppProvider(props: {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [confirmState, setConfirmState] = useState<ConfirmState>(null);
   const offsetRef = useRef(0);
+  const online = useOnline(sb, props.supabaseUrl, props.supabaseAnonKey);
   const nickFocusRef = useRef<() => void>(() => {});
 
   // server clock offset so every visitor sees the same countdown
@@ -110,6 +113,7 @@ export function AppProvider(props: {
     confirm,
     focusNickname,
     registerNicknameFocus,
+    online,
   };
 
   const close = (v: boolean) => {

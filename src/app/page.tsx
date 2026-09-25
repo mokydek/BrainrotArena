@@ -5,7 +5,7 @@ import SetupScreen from "@/components/SetupScreen";
 import { ADMIN_COOKIE, PLAYER_COOKIE, hashToken, verifyAdminToken } from "@/lib/auth";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isConfigured, missingEnv } from "@/lib/env";
 import { detectLang } from "@/lib/i18n";
-import { discordUrl } from "@/lib/site";
+import { discordUrl, telegramUrl } from "@/lib/site";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { Contest, Entry, Player, Streamer } from "@/lib/types";
 
@@ -57,7 +57,7 @@ export default async function Home() {
   return (
     <div className="page">
       <AppProvider supabaseUrl={SUPABASE_URL} supabaseAnonKey={SUPABASE_ANON_KEY} initialLang={lang} initialAdmin={isAdmin} initialPlayer={player}>
-        <Arena initial={initial} contactUrl={process.env.CONTACT_URL || process.env.NEXT_PUBLIC_CONTACT_URL || null} discordUrl={discordUrl()} />
+        <Arena initial={initial} contactUrl={process.env.CONTACT_URL || process.env.NEXT_PUBLIC_CONTACT_URL || null} discordUrl={discordUrl()} telegramUrl={telegramUrl()} />
       </AppProvider>
     </div>
   );

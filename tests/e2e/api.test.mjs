@@ -378,11 +378,11 @@ test("expired contests are drawn by the refresher", async () => {
 
 test("participation conditions: saved, edited, cleaned; old DB without column still works", async () => {
   let r = await admin.req("/api/contest", {
-    body: { durationSeconds: 600, title: "Cond Test", conditions: " 1. Follow @x on TikTok \n\n  Join https://discord.gg/nnnhQW3z54  \n" },
+    body: { durationSeconds: 600, title: "Cond Test", conditions: " 1. Follow @x on TikTok \n\n  Join https://discord.gg/mPEwsqbz35  \n" },
   });
   assert.equal(r.status, 200, JSON.stringify(r.data));
   const c = r.data.contest;
-  assert.equal(c.conditions, "1. Follow @x on TikTok\nJoin https://discord.gg/nnnhQW3z54");
+  assert.equal(c.conditions, "1. Follow @x on TikTok\nJoin https://discord.gg/mPEwsqbz35");
   assert.equal(r.data.warning, undefined);
   const pub = await anon(`contests?select=conditions&id=eq.${c.id}`);
   assert.equal(pub.data[0].conditions, c.conditions, "public can read conditions");
@@ -413,4 +413,26 @@ test("participation conditions: saved, edited, cleaned; old DB without column st
   r = await admin.req("/api/contest", { body: { durationSeconds: 60, conditions: "back" } });
   assert.equal(r.data.contest.conditions, "back");
   await admin.req(`/api/contest/${r.data.contest.id}`, { method: "PATCH", body: { action: "cancel" } });
+});
+
+test("online counter: heartbeat, leave, stale sessions, anon cannot read the table", async () => {
+  const a = crypto.randomUUID(), b = crypto.randomUUID();
+  const base = Number((await anon("rpc/presence_count", { method: "POST", body: {} })).data);
+  let r = await anon("rpc/presence_ping", { method: "POST", body: { p_session: a } });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data, base + 1);
+  r = await anon("rpc/presence_ping", { method: "POST", body: { p_session: a } });
+  assert.equal(r.data, base + 1, "same session counted once");
+  r = await anon("rpc/presence_ping", { method: "POST", body: { p_session: b } });
+  assert.equal(r.data, base + 2);
+  await anon("rpc/presence_leave", { method: "POST", body: { p_session: b } });
+  assert.equal(Number((await anon("rpc/presence_count", { method: "POST", body: {} })).data), base + 1);
+  sql(`update site_presence set last_seen = now() - interval '2 minutes' where session_id = '${a}'`);
+  assert.equal(Number((await anon("rpc/presence_count", { method: "POST", body: {} })).data), base, "stale sessions drop out");
+  r = await anon("rpc/presence_ping", { method: "POST", body: { p_session: "not-a-uuid" } });
+  assert.equal(r.status, 400);
+  r = await anon("site_presence?select=*");
+  assert.equal(r.status, 401, JSON.stringify(r.data));
+  r = await anon("site_presence", { method: "POST", body: { session_id: crypto.randomUUID() } });
+  assert.ok(r.status === 401 || r.status === 403, `direct insert denied (${r.status})`);
 });

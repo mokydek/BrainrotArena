@@ -39,9 +39,13 @@ alter table public.contests add column if not exists conditions text;
 
 (то же лежит в `supabase/migrations/002_contest_conditions.sql`; полный `schema.sql` тоже можно перезапустить).
 
-## Discord
+## Telegram и Discord
 
-Ссылка на Discord (`https://discord.gg/nnnhQW3z54`) стоит в шапке и в левой колонке. Поменять — переменная `DISCORD_URL` в Vercel.
+Telegram (`https://t.me/BrainrotArena`) — в шапке и вверху левой колонки, Discord (`https://discord.gg/mPEwsqbz35`) — в шапке и вверху правой. Поменять ссылки — переменные `TELEGRAM_URL` / `DISCORD_URL` в Vercel.
+
+## Онлайн
+
+В шапке показывается, сколько людей сейчас на сайте (каждая открытая страница отмечается раз в 20 секунд, считаются все за последние 90 секунд). Нужен SQL из `supabase/migrations/003_online_counter.sql` (или перезапуск `schema.sql`) — без него счётчик просто скрыт.
 
 ## Как это работает
 

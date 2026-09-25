@@ -23,6 +23,17 @@ export function DiscordIcon({ size = 20 }: { size?: number }) {
   );
 }
 
+export function TelegramIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M21.94 4.3a1.2 1.2 0 0 0-1.23-.2L2.9 11.03c-.8.31-.78 1.45.03 1.73l4.46 1.53 1.72 5.35c.2.64 1 .86 1.5.41l2.5-2.25 4.52 3.33c.55.4 1.33.1 1.47-.57l3.2-15.12a1.2 1.2 0 0 0-.36-1.14zM9.9 14.24l-.47 3.4-1.16-3.63 9.4-6.1-7.77 6.33z"
+      />
+    </svg>
+  );
+}
+
 export function PlatformIcon({ platform }: { platform: Platform }) {
   switch (platform) {
     case "tiktok":

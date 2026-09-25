@@ -8,7 +8,7 @@ import StreamerModal from "@/components/StreamerModal";
 import ContestCard from "@/components/ContestCard";
 import ContestModal from "@/components/ContestModal";
 import { api } from "@/lib/api";
-import { DiscordIcon } from "@/components/icons";
+import { DiscordIcon, TelegramIcon } from "@/components/icons";
 import type { Contest, Entry, Side, Streamer } from "@/lib/types";
 
 export type ArenaData = {
@@ -21,7 +21,17 @@ export type ArenaData = {
 
 const ENTRIES_SHOWN = 40;
 
-export default function Arena({ initial, contactUrl, discordUrl }: { initial: ArenaData; contactUrl: string | null; discordUrl: string }) {
+export default function Arena({
+  initial,
+  contactUrl,
+  discordUrl,
+  telegramUrl,
+}: {
+  initial: ArenaData;
+  contactUrl: string | null;
+  discordUrl: string;
+  telegramUrl: string;
+}) {
   const { sb, t, player } = useApp();
   const [streamers, setStreamers] = useState<Streamer[]>(initial.streamers);
   const [contest, setContest] = useState<Contest | null>(initial.contest);
@@ -188,7 +198,7 @@ export default function Arena({ initial, contactUrl, discordUrl }: { initial: Ar
 
   return (
     <>
-      <TopBar discordUrl={discordUrl} />
+      <TopBar discordUrl={discordUrl} telegramUrl={telegramUrl} />
       <main className="arena">
         <div className="side-col left-col">
           <StreamerPanel
@@ -199,13 +209,13 @@ export default function Arena({ initial, contactUrl, discordUrl }: { initial: Ar
             onReorder={reorder}
             contactUrl={contactUrl}
           >
-            <a className="discord-card" href={discordUrl} target="_blank" rel="noopener noreferrer" data-testid="discord-card">
+            <a className="social-card tg" href={telegramUrl} target="_blank" rel="noopener noreferrer" data-testid="telegram-card">
               <span className="dc-ic">
-                <DiscordIcon size={26} />
+                <TelegramIcon size={26} />
               </span>
               <span style={{ minWidth: 0 }}>
-                <span className="dc-title">{t("joinDiscord")}</span>
-                <span className="dc-sub">{t("discordSub")}</span>
+                <span className="dc-title">{t("joinTelegram")}</span>
+                <span className="dc-sub">{t("telegramSub")}</span>
               </span>
             </a>
           </StreamerPanel>
@@ -233,6 +243,15 @@ export default function Arena({ initial, contactUrl, discordUrl }: { initial: Ar
             onReorder={reorder}
             contactUrl={contactUrl}
           >
+            <a className="social-card dc" href={discordUrl} target="_blank" rel="noopener noreferrer" data-testid="discord-card">
+              <span className="dc-ic">
+                <DiscordIcon size={26} />
+              </span>
+              <span style={{ minWidth: 0 }}>
+                <span className="dc-title">{t("joinDiscord")}</span>
+                <span className="dc-sub">{t("discordSub")}</span>
+              </span>
+            </a>
             {lastWinner && (
               <>
                 <h2 className="panel-title">🏆 {t("lastWinner")}</h2>

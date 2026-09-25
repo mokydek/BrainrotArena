@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/components/AppContext";
-import { DiscordIcon } from "@/components/icons";
+import { DiscordIcon, TelegramIcon } from "@/components/icons";
 import { api } from "@/lib/api";
 import { validateNickname, isReservedNickname, normalizeNickname } from "@/lib/nickname";
 import type { Player } from "@/lib/types";
@@ -136,8 +136,8 @@ function NicknameBar() {
   );
 }
 
-export default function TopBar({ discordUrl }: { discordUrl: string }) {
-  const { t, lang, setLang, isAdmin, setIsAdmin } = useApp();
+export default function TopBar({ discordUrl, telegramUrl }: { discordUrl: string; telegramUrl: string }) {
+  const { t, lang, setLang, isAdmin, setIsAdmin, online } = useApp();
 
   async function logout() {
     await api("/api/admin/logout", { method: "POST" });
@@ -150,8 +150,14 @@ export default function TopBar({ discordUrl }: { discordUrl: string }) {
         <Link href="/" className="logo">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="logo-mark" src="/logo.jpg" alt="Brainrot Arena" width={40} height={40} />
-          {t("siteName")}
+          <span className="logo-text">{t("siteName")}</span>
         </Link>
+        {online !== null && (
+          <span className="online-pill" data-testid="online" title={`${online} ${t("online")}`}>
+            <i className="online-dot" />
+            <b data-testid="online-count">{online}</b> {t("online")}
+          </span>
+        )}
         <div className="topbar-spacer" />
         <NicknameBar />
         {isAdmin && (
@@ -160,7 +166,11 @@ export default function TopBar({ discordUrl }: { discordUrl: string }) {
             <button onClick={logout}>{t("logout")}</button>
           </div>
         )}
-        <a className="discord-btn" href={discordUrl} target="_blank" rel="noopener noreferrer" data-testid="discord-top" aria-label="Discord">
+        <a className="social-btn tg" href={telegramUrl} target="_blank" rel="noopener noreferrer" data-testid="telegram-top" aria-label="Telegram">
+          <TelegramIcon />
+          <span>Telegram</span>
+        </a>
+        <a className="social-btn dc" href={discordUrl} target="_blank" rel="noopener noreferrer" data-testid="discord-top" aria-label="Discord">
           <DiscordIcon />
           <span>Discord</span>
         </a>
