@@ -100,15 +100,17 @@ try {
   await admin.getByTestId("contest-save").click();
   await admin.locator(".modal").waitFor({ state: "detached" });
   await admin.locator(".stage img.brainrot").waitFor();
-  const code = await admin.getByTestId("contest-code").textContent();
+  assert.equal(await admin.locator(".contest-id").count(), 0, "ID text removed");
+  assert.equal(await admin.locator(".die").count(), 0, "dice removed");
+  const code = (await anon("contests?select=code&order=created_at.desc&limit=1"))[0].code;
   assert.match(code, /^[A-Za-z0-9]{10}$/);
-  await admin.waitForFunction(() => document.querySelector(".die.d3 .die-face")?.textContent?.startsWith("04"));
+  await admin.waitForFunction(() => document.querySelector("[data-testid=countdown]")?.textContent?.startsWith("00:04:"));
 
   step("timer +1 / -1 buttons");
   await admin.getByTestId("timer-plus-1").click();
-  await admin.waitForFunction(() => document.querySelector(".die.d3 .die-face")?.textContent?.startsWith("05"));
+  await admin.waitForFunction(() => document.querySelector("[data-testid=countdown]")?.textContent?.startsWith("00:05:"));
   await admin.getByTestId("timer-minus-1").click();
-  await admin.waitForFunction(() => document.querySelector(".die.d3 .die-face")?.textContent?.startsWith("04"));
+  await admin.waitForFunction(() => document.querySelector("[data-testid=countdown]")?.textContent?.startsWith("00:04:"));
 
   // ---------------------------------------------------------------- players
   const p1Ctx = await browser.newContext({ viewport: { width: 1366, height: 900 } });

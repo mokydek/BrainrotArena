@@ -223,28 +223,20 @@ export default function ContestCard({
         {statusChip}
       </div>
 
-      <div className={`dice-row${running && remaining !== null && remaining < 10_000 ? " urgent" : ""}`} data-testid="countdown">
-        {[
-          { v: parts.d, l: t("dDays") },
-          { v: parts.h, l: t("dHrs") },
-          { v: parts.m, l: t("dMin") },
-          { v: parts.s, l: t("dSec") },
-        ].map((p, i) => (
-          <div key={p.l} className={`die d${i + 1}`}>
-            <div className="die-face">
-              {tick === null || !contest ? "–" : pad(p.v)}
-              <small>{p.l}</small>
-            </div>
-          </div>
-        ))}
+      <div className="ends-label">{running ? t("endsIn") : "\u00a0"}</div>
+      <div className={`timer${running && remaining !== null && remaining < 10_000 ? " urgent" : ""}`} data-testid="countdown">
+        {(tick === null || !contest
+          ? "--:--:--"
+          : `${parts.d ? `${parts.d}${t("dShort")} ` : ""}${pad(parts.h)}:${pad(parts.m)}:${pad(parts.s)}`
+        )
+          .split("")
+          .map((ch, i) => (
+            <span key={i} className={/[0-9-]/.test(ch) ? "tch" : ch === ":" ? "tcol" : undefined}>
+              {ch}
+            </span>
+          ))}
       </div>
-      <div className="ends-label">{running ? t("endsIn") : " "}</div>
 
-      {contest && (
-        <div className="contest-id">
-          ID: <b data-testid="contest-code">{contest.code}</b>
-        </div>
-      )}
       <Link className="verify-btn" href={contest ? `/history#${contest.code}` : "/history"}>
         ⏱️ <span>{t("verifyHistory")}</span>
       </Link>
