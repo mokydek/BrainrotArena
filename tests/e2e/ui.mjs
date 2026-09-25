@@ -40,6 +40,14 @@ try {
   assert.equal(await admin.getByTestId("add-streamer-left").count(), 0, "no + for visitors");
   await admin.screenshot({ path: `${SHOTS}/01-empty.png` });
 
+  step("logo + favicon");
+  assert.ok(await admin.locator("img.logo-mark").evaluate((i) => i.complete && i.naturalWidth === 256), "logo loaded");
+  const icons = await admin.locator('link[rel="icon"]').evaluateAll((ls) => ls.map((l) => l.getAttribute("href")));
+  assert.ok(icons.some((h) => h.startsWith("/favicon.ico")) && icons.some((h) => h.startsWith("/icon-32.png")), JSON.stringify(icons));
+  for (const u of ["/favicon.ico", "/icon-32.png", "/icon-192.png", "/apple-touch-icon.png", "/og.jpg", "/logo.jpg"]) {
+    assert.equal((await fetch(BASE + u)).status, 200, u);
+  }
+
   step("admin login");
   await admin.goto(`${BASE}/admin`);
   await admin.getByTestId("admin-password").fill("wrong");
@@ -101,6 +109,7 @@ try {
   await admin.locator(".modal").waitFor({ state: "detached" });
   await admin.locator(".stage img.brainrot").waitFor();
   assert.equal(await admin.locator(".contest-id").count(), 0, "ID text removed");
+  assert.equal((await admin.getByTestId("contest-name").textContent()).trim(), "Skibidi Toilet", "name under timer (falls back to prize)");
   assert.equal(await admin.locator(".die").count(), 0, "dice removed");
   const code = (await anon("contests?select=code&order=created_at.desc&limit=1"))[0].code;
   assert.match(code, /^[A-Za-z0-9]{10}$/);
@@ -211,6 +220,7 @@ try {
   await admin.getByTestId("contest-save").click();
   await admin.locator(".modal").waitFor({ state: "detached" });
   await admin.getByTestId("last-winner").filter({ hasText: db.winner_nickname }).waitFor();
+  await admin.getByTestId("contest-name").filter({ hasText: "VIP DROP" }).waitFor();
   await p3.reload();
   await p3.getByTestId("join-btn").click();
   await p3.getByTestId("join-btn").filter({ hasText: "YOU'RE IN" }).waitFor();

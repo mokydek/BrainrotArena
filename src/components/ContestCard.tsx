@@ -25,6 +25,8 @@ function split(ms: number) {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
+const GENERIC_TITLES = new Set(["brainrot giveaway", "розыгрыш брейнрота"]);
+
 export default function ContestCard({
   contest,
   entries,
@@ -168,6 +170,8 @@ export default function ContestCard({
   const iWon = Boolean(finished && player && contest?.winner_player_id === player.id);
   const showWinner = Boolean(finished && contest && revealed.has(contest.id));
   const reelNames = entries.map((e) => e.nickname);
+  // giveaway name shown under the timer (old contests may still carry the generic default title)
+  const contestName = contest ? (GENERIC_TITLES.has(contest.title.trim().toLowerCase()) ? contest.prize : contest.title) : null;
 
   let joinLabel = t("join");
   let joinDisabled = joining;
@@ -210,7 +214,7 @@ export default function ContestCard({
   return (
     <section className="panel contest" data-testid="contest">
       <h1 className="contest-title" data-testid="contest-title">
-        {contest?.title || t("giveaway")}
+        {t("giveaway")}
       </h1>
 
       <div className="chips">
@@ -236,6 +240,11 @@ export default function ContestCard({
             </span>
           ))}
       </div>
+      {contestName && (
+        <div className="contest-name" data-testid="contest-name">
+          {contestName}
+        </div>
+      )}
 
       <Link className="verify-btn" href={contest ? `/history#${contest.code}` : "/history"}>
         ⏱️ <span>{t("verifyHistory")}</span>

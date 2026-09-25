@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   const { data, error } = await sb.rpc("create_contest", {
-    p_title: str(body.title, 80) || "BRAINROT GIVEAWAY",
+    p_title: str(body.title, 80) || str(body.prize, 80) || "BRAINROT GIVEAWAY",
     p_prize: str(body.prize, 120) || "",
     p_image_url: httpUrl(body.imageUrl) || "",
     p_ends_at: endsAt,

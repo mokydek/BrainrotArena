@@ -33,7 +33,7 @@ export default function ContestModal({
   onSaved: (c: Contest) => void;
 }) {
   const { t } = useApp();
-  const [title, setTitle] = useState(contest?.title ?? t("giveaway"));
+  const [title, setTitle] = useState(contest?.title ?? "");
   const [prize, setPrize] = useState(contest?.prize ?? "");
   const [imageUrl, setImageUrl] = useState(contest?.image_url ?? "");
   const [amount, setAmount] = useState("15");
@@ -100,7 +100,7 @@ export default function ContestModal({
 
       <div className="field">
         <label>{t("title")}</label>
-        <input className="input" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} data-testid="contest-title-input" />
+        <input className="input" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} placeholder="Skibidi Toilet Drop" data-testid="contest-title-input" autoFocus />
       </div>
       <div className="field">
         <label>{t("prizeName")}</label>

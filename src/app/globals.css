@@ -154,14 +154,14 @@ img { display: block; max-width: 100%; }
   white-space: nowrap;
 }
 .logo-mark {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #ff3b3b, #a0000f);
-  display: grid;
-  place-items: center;
-  box-shadow: 0 3px 0 #6d0010;
-  font-size: 20px;
+  object-fit: cover;
+  background: #000;
+  border: 2px solid #ff7a1a;
+  box-shadow: 0 3px 0 #6d0010, 0 0 12px rgba(255, 120, 20, 0.45);
+  flex-shrink: 0;
 }
 .topbar-spacer { flex: 1; }
 
@@ -520,6 +520,17 @@ img { display: block; max-width: 100%; }
   text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35), 0 0 26px rgba(255, 110, 70, 0.55);
   white-space: nowrap;
 }
+.contest-name {
+  margin: -6px 0 16px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: #ffd400;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.4), 0 0 18px rgba(255, 180, 0, 0.45);
+  overflow-wrap: anywhere;
+}
 .timer .tch { display: inline-block; width: 0.62em; text-align: center; }
 .timer .tcol { display: inline-block; width: 0.32em; text-align: center; transform: translateY(-0.06em); }
 .timer.urgent { color: #ffd400; animation: urgent 1s steps(2) infinite; }
@@ -838,7 +849,7 @@ img { display: block; max-width: 100%; }
   :root { --topbar-h: auto; }
   .topbar-inner { flex-wrap: wrap; gap: 8px 10px; padding: 8px 12px; }
   .logo { font-size: 20px; }
-  .logo-mark { width: 30px; height: 30px; font-size: 16px; }
+  .logo-mark { width: 34px; height: 34px; }
   .nick-bar { order: 3; width: 100%; }
   .nick-form { width: 100%; }
   .nick-input-wrap { flex: 1; }

@@ -24,7 +24,7 @@ const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 try {
   await page.goto(BASE);
-  await page.getByTestId("contest-title").filter({ hasText: "Timer Test" }).waitFor();
+  await page.getByTestId("contest-name").filter({ hasText: "Timer Test" }).waitFor();
   await page.getByTestId("winner-reel").waitFor({ timeout: 25000 });
   await page.getByTestId("winner-nick").waitFor({ timeout: 15000 });
   const w = (await page.getByTestId("winner-nick").textContent()).trim();

@@ -147,7 +147,8 @@ export default function TopBar() {
     <header className="topbar">
       <div className="topbar-inner">
         <Link href="/" className="logo">
-          <span className="logo-mark">🧠</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="logo-mark" src="/logo.jpg" alt="Brainrot Arena" width={40} height={40} />
           {t("siteName")}
         </Link>
         <div className="topbar-spacer" />
