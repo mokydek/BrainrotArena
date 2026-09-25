@@ -27,3 +27,14 @@ export function intOrNull(v: unknown, min: number, max: number): number | null {
   if (!Number.isFinite(n)) return null;
   return Math.min(max, Math.max(min, n));
 }
+
+/** Multi-line text: trims each line, drops empty lines, limits size. */
+export function lines(v: unknown, maxLines = 12, maxLen = 200): string | null {
+  if (typeof v !== "string") return null;
+  const out = v
+    .split(/\r?\n/)
+    .map((l) => l.trim().slice(0, maxLen))
+    .filter(Boolean)
+    .slice(0, maxLines);
+  return out.length ? out.join("\n") : null;
+}

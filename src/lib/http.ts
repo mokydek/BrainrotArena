@@ -38,3 +38,8 @@ export function pgErrorCode(err: { message?: string; code?: string } | null | un
   if (err?.code === "22P02") return "CONTEST_NOT_FOUND";
   return known ? known[0] : "DB_ERROR";
 }
+
+/** Column missing in the database (schema not updated yet). */
+export function isMissingColumn(err: { code?: string; message?: string } | null | undefined): boolean {
+  return Boolean(err && (err.code === "PGRST204" || err.code === "42703" || /column .* does not exist|Could not find the .* column/i.test(err.message || "")));
+}

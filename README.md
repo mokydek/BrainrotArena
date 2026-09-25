@@ -29,6 +29,20 @@
 
 Другой Supabase-проект: задай `NEXT_PUBLIC_SUPABASE_URL` и `NEXT_PUBLIC_SUPABASE_ANON_KEY` — переменные всегда важнее вшитых значений. Если добавить `POSTGRES_URL_NON_POOLING` (Supabase → Connect), таблицы можно создать кнопкой «Создать таблицы» в `/admin` вместо шага 1.
 
+## Обновления базы
+
+Если таблицы уже созданы раньше, для «Условий участия» выполни один раз в [SQL Editor](https://supabase.com/dashboard/project/vuknddvhpwkyjvrypaql/sql/new):
+
+```sql
+alter table public.contests add column if not exists conditions text;
+```
+
+(то же лежит в `supabase/migrations/002_contest_conditions.sql`; полный `schema.sql` тоже можно перезапустить).
+
+## Discord
+
+Ссылка на Discord (`https://discord.gg/nnnhQW3z54`) стоит в шапке и в левой колонке. Поменять — переменная `DISCORD_URL` в Vercel.
+
 ## Как это работает
 
 - **Живые обновления** — Supabase Realtime (участники, победитель, стримеры обновляются без перезагрузки), плюс резервный опрос каждые несколько секунд.

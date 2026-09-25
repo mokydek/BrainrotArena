@@ -1,6 +1,6 @@
-import { fail, guardAdmin, json, readJson } from "@/lib/http";
+import { fail, guardAdmin, isMissingColumn, json, readJson } from "@/lib/http";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { httpUrl, intOrNull, isoDate, str } from "@/lib/validate";
+import { httpUrl, intOrNull, isoDate, lines, str } from "@/lib/validate";
 
 type Body = {
   title?: string;
@@ -9,6 +9,7 @@ type Body = {
   durationSeconds?: number;
   endsAt?: string;
   maxParticipants?: number | null;
+  conditions?: string;
 };
 
 const MIN_SECONDS = 10;
@@ -44,5 +45,15 @@ export async function POST(req: Request) {
     p_starts_at: null,
   });
   if (error) return fail("DB_ERROR", 500, { message: error.message });
+
+  const conditions = lines(body.conditions);
+  if (conditions) {
+    const upd = await sb.from("contests").update({ conditions }).eq("id", data.id).select("*").single();
+    if (upd.error) {
+      if (isMissingColumn(upd.error)) return json({ ok: true, contest: data, warning: "MIGRATION_NEEDED" });
+      return fail("DB_ERROR", 500, { message: upd.error.message });
+    }
+    return json({ ok: true, contest: upd.data });
+  }
   return json({ ok: true, contest: data });
 }

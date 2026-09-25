@@ -1,7 +1,7 @@
-import { fail, guardAdmin, json, readJson } from "@/lib/http";
+import { fail, guardAdmin, isMissingColumn, json, readJson } from "@/lib/http";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { Contest } from "@/lib/types";
-import { httpUrl, intOrNull, isoDate, str } from "@/lib/validate";
+import { httpUrl, intOrNull, isoDate, lines, str } from "@/lib/validate";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -13,6 +13,7 @@ type Body = {
   maxParticipants?: number | null;
   endsAt?: string;
   addSeconds?: number;
+  conditions?: string | null;
 };
 
 /** Admin: edit timer / image / limits, end now or cancel. */
@@ -47,6 +48,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
   if ("title" in body) patch.title = str(body.title, 80) || c.title;
   if ("prize" in body) patch.prize = str(body.prize, 120);
   if ("imageUrl" in body) patch.image_url = body.imageUrl ? httpUrl(body.imageUrl) : null;
+  if ("conditions" in body) patch.conditions = lines(body.conditions);
 
   const timingChange = "maxParticipants" in body || "endsAt" in body || "addSeconds" in body;
   if (timingChange && c.status !== "active") return fail("CONTEST_CLOSED");
@@ -67,7 +69,14 @@ export async function PATCH(req: Request, ctx: Ctx) {
   }
 
   if (!Object.keys(patch).length) return json({ ok: true, contest: c });
-  const { data, error } = await sb.from("contests").update(patch).eq("id", id).select("*").single();
+  let { data, error } = await sb.from("contests").update(patch).eq("id", id).select("*").single();
+  if (error && isMissingColumn(error) && "conditions" in patch) {
+    // database not updated yet: save everything else and tell the admin
+    delete patch.conditions;
+    if (!Object.keys(patch).length) return json({ ok: true, contest: c, warning: "MIGRATION_NEEDED" });
+    ({ data, error } = await sb.from("contests").update(patch).eq("id", id).select("*").single());
+    if (!error) return json({ ok: true, contest: data, warning: "MIGRATION_NEEDED" });
+  }
   if (error) return fail("DB_ERROR", 500, { message: error.message });
   return json({ ok: true, contest: data });
 }

@@ -375,3 +375,42 @@ test("expired contests are drawn by the refresher", async () => {
   assert.equal(r.data.drawn, 1);
   assert.equal(sql(`select status || ':' || winner_nickname from contests where id='${c.id}'`), "finished:Бетон_3");
 });
+
+test("participation conditions: saved, edited, cleaned; old DB without column still works", async () => {
+  let r = await admin.req("/api/contest", {
+    body: { durationSeconds: 600, title: "Cond Test", conditions: " 1. Follow @x on TikTok \n\n  Join https://discord.gg/nnnhQW3z54  \n" },
+  });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  const c = r.data.contest;
+  assert.equal(c.conditions, "1. Follow @x on TikTok\nJoin https://discord.gg/nnnhQW3z54");
+  assert.equal(r.data.warning, undefined);
+  const pub = await anon(`contests?select=conditions&id=eq.${c.id}`);
+  assert.equal(pub.data[0].conditions, c.conditions, "public can read conditions");
+
+  r = await admin.req(`/api/contest/${c.id}`, { method: "PATCH", body: { conditions: "Only one rule" } });
+  assert.equal(r.data.contest.conditions, "Only one rule");
+  r = await admin.req(`/api/contest/${c.id}`, { method: "PATCH", body: { conditions: "   " } });
+  assert.equal(r.data.contest.conditions, null);
+
+  // simulate a Supabase project that has not run the update yet
+  sql("alter table contests drop column conditions; notify pgrst, 'reload schema';");
+  await sleep(1500);
+  try {
+    r = await admin.req(`/api/contest/${c.id}`, { method: "PATCH", body: { conditions: "x", title: "Still Saved" } });
+    assert.equal(r.status, 200, JSON.stringify(r.data));
+    assert.equal(r.data.warning, "MIGRATION_NEEDED");
+    assert.equal(r.data.contest.title, "Still Saved");
+    await admin.req(`/api/contest/${c.id}`, { method: "PATCH", body: { action: "cancel" } });
+    r = await admin.req("/api/contest", { body: { durationSeconds: 60, conditions: "rule" } });
+    assert.equal(r.status, 200, JSON.stringify(r.data));
+    assert.equal(r.data.warning, "MIGRATION_NEEDED");
+    await admin.req(`/api/contest/${r.data.contest.id}`, { method: "PATCH", body: { action: "cancel" } });
+  } finally {
+    // the one-line migration from supabase/migrations restores it
+    execSync(`psql "${DB}" -q -f supabase/migrations/002_contest_conditions.sql`);
+    await sleep(1500);
+  }
+  r = await admin.req("/api/contest", { body: { durationSeconds: 60, conditions: "back" } });
+  assert.equal(r.data.contest.conditions, "back");
+  await admin.req(`/api/contest/${r.data.contest.id}`, { method: "PATCH", body: { action: "cancel" } });
+});

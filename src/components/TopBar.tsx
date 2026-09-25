@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/components/AppContext";
+import { DiscordIcon } from "@/components/icons";
 import { api } from "@/lib/api";
 import { validateNickname, isReservedNickname, normalizeNickname } from "@/lib/nickname";
 import type { Player } from "@/lib/types";
@@ -135,7 +136,7 @@ function NicknameBar() {
   );
 }
 
-export default function TopBar() {
+export default function TopBar({ discordUrl }: { discordUrl: string }) {
   const { t, lang, setLang, isAdmin, setIsAdmin } = useApp();
 
   async function logout() {
@@ -159,6 +160,10 @@ export default function TopBar() {
             <button onClick={logout}>{t("logout")}</button>
           </div>
         )}
+        <a className="discord-btn" href={discordUrl} target="_blank" rel="noopener noreferrer" data-testid="discord-top" aria-label="Discord">
+          <DiscordIcon />
+          <span>Discord</span>
+        </a>
         <div className="lang-toggle">
           <button className={lang === "en" ? "on" : ""} onClick={() => setLang("en")}>
             EN

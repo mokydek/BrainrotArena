@@ -25,14 +25,16 @@ function toLocalInput(ms: number): string {
 
 export default function ContestModal({
   contest,
+  discordUrl,
   onClose,
   onSaved,
 }: {
   contest: Contest | null; // null = create
+  discordUrl: string;
   onClose: () => void;
   onSaved: (c: Contest) => void;
 }) {
-  const { t } = useApp();
+  const { t, toast } = useApp();
   const [title, setTitle] = useState(contest?.title ?? "");
   const [prize, setPrize] = useState(contest?.prize ?? "");
   const [imageUrl, setImageUrl] = useState(contest?.image_url ?? "");
@@ -41,6 +43,7 @@ export default function ContestModal({
   const [endAt, setEndAt] = useState(contest ? toLocalInput(new Date(contest.ends_at).getTime()) : "");
   const [endMode, setEndMode] = useState<"duration" | "exact">(contest ? "exact" : "duration");
   const [maxPlayers, setMaxPlayers] = useState(contest?.max_participants ? String(contest.max_participants) : "");
+  const [conditions, setConditions] = useState(contest?.conditions ?? "");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -73,12 +76,14 @@ export default function ContestModal({
           title,
           prize,
           imageUrl,
+          conditions,
           maxParticipants: max,
           ...(endMode === "exact" && endAt ? { endsAt: new Date(endAt).toISOString() } : { durationSeconds: durationSeconds() }),
         },
       });
     } else {
       const body: Record<string, unknown> = { title, prize, imageUrl: imageUrl || null };
+      if (conditions !== (contest.conditions ?? "")) body.conditions = conditions;
       if (contest.status === "active") {
         body.maxParticipants = max;
         const originalLocal = toLocalInput(new Date(contest.ends_at).getTime());
@@ -89,6 +94,7 @@ export default function ContestModal({
     }
     setBusy(false);
     if (!r.ok) return setError(t(r.error));
+    if ((r as { warning?: string }).warning) toast(t((r as { warning?: string }).warning!));
     onSaved(r.contest);
     onClose();
   }
@@ -191,6 +197,27 @@ export default function ContestModal({
       <div className="field">
         <label>{t("maxPlayers")}</label>
         <input className="input" type="number" min={1} value={maxPlayers} onChange={(e) => setMaxPlayers(e.target.value)} placeholder="∞" data-testid="contest-max" />
+      </div>
+
+      <div className="field">
+        <label>{t("conditionsLabel")}</label>
+        <textarea
+          className="input textarea"
+          rows={4}
+          value={conditions}
+          onChange={(e) => setConditions(e.target.value)}
+          placeholder={t("conditionsPlaceholder")}
+          data-testid="contest-conditions"
+        />
+        <div className="seg" style={{ marginTop: 6 }}>
+          <button
+            type="button"
+            onClick={() => setConditions((c) => (c.includes(discordUrl) ? c : `${c.trim() ? `${c.trim()}\n` : ""}Discord: ${discordUrl}`))}
+            data-testid="add-discord-line"
+          >
+            ➕ {t("addDiscordLine")}
+          </button>
+        </div>
       </div>
 
       <div className="modal-actions">

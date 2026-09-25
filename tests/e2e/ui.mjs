@@ -39,6 +39,17 @@ try {
   await admin.getByTestId("contest").waitFor();
   assert.equal(await admin.getByTestId("add-streamer-left").count(), 0, "no + for visitors");
   await admin.screenshot({ path: `${SHOTS}/01-empty.png` });
+  step("Discord links + English by default (even for a Russian browser)");
+  for (const id of ["discord-top", "discord-card"]) {
+    assert.equal(await admin.getByTestId(id).getAttribute("href"), "https://discord.gg/nnnhQW3z54", id);
+    assert.equal(await admin.getByTestId(id).getAttribute("target"), "_blank");
+  }
+  const ruCtx = await browser.newContext({ locale: "ru-RU", extraHTTPHeaders: { "Accept-Language": "ru-RU,ru;q=0.9" } });
+  const ruPage = await ruCtx.newPage();
+  await ruPage.goto(BASE);
+  await ruPage.locator(".panel-title").filter({ hasText: "OUR TOP STREAMERS" }).first().waitFor();
+  assert.equal(await ruPage.evaluate(() => document.documentElement.lang), "en");
+  await ruCtx.close();
 
   step("logo + favicon");
   assert.ok(await admin.locator("img.logo-mark").evaluate((i) => i.complete && i.naturalWidth === 256), "logo loaded");
@@ -101,6 +112,9 @@ try {
   step("admin creates a giveaway with an uploaded brainrot image");
   await admin.getByTestId("contest-new").click();
   await admin.getByTestId("contest-prize-input").fill("Skibidi Toilet");
+  await admin.getByTestId("contest-conditions").fill("1. Follow @kazuhiko_mayuko on TikTok");
+  await admin.getByTestId("add-discord-line").click();
+  assert.match(await admin.getByTestId("contest-conditions").inputValue(), /Follow @kazuhiko_mayuko on TikTok\nDiscord: https:\/\/discord\.gg\/nnnhQW3z54$/);
   await admin.getByTestId("contest-image-file").setInputFiles(IMG);
   await admin.getByTestId("contest-image-preview").waitFor();
   await admin.getByRole("button", { name: "5m", exact: true }).click();
@@ -138,6 +152,12 @@ try {
   await p1.getByTestId("nick-hint").filter({ hasText: /free/i }).waitFor();
   await p1.getByTestId("nick-save").click();
   await p1.getByTestId("nick-value").filter({ hasText: "SkibidiFan" }).waitFor();
+  await p1.getByTestId("conditions").filter({ hasText: "Follow @kazuhiko_mayuko" }).waitFor();
+  assert.equal(await p1.getByTestId("conditions").locator("a").getAttribute("href"), "https://discord.gg/nnnhQW3z54");
+  await p1.getByTestId("join-btn").click(); // not accepted yet -> blocked
+  await p1.locator(".toast").filter({ hasText: /tick the box/i }).waitFor();
+  assert.equal(await p1.getByTestId("join-sub").textContent(), "", "not joined without accepting conditions");
+  await p1.getByTestId("conditions-accept").check();
   await p1.getByTestId("join-btn").click();
   await p1.getByTestId("join-btn").filter({ hasText: "YOU'RE IN" }).waitFor();
   assert.match(await p1.getByTestId("join-sub").textContent(), /#1/);
@@ -151,6 +171,7 @@ try {
   await p2.getByTestId("nick-input").fill("Тралалело");
   await p2.getByTestId("nick-save").click();
   await p2.getByTestId("nick-value").filter({ hasText: "Тралалело" }).waitFor();
+  await p2.getByTestId("conditions-accept").check();
   await p2.getByTestId("join-btn").click();
   await p2.getByTestId("join-btn").filter({ hasText: "YOU'RE IN" }).waitFor();
 
@@ -161,6 +182,7 @@ try {
   await p3.getByTestId("nick-input").fill("Brr_Brr");
   await p3.getByTestId("nick-save").click();
   await p3.getByTestId("nick-value").waitFor();
+  await p3.getByTestId("conditions-accept").check();
   await p3.getByTestId("join-btn").click();
   await p3.getByTestId("join-btn").filter({ hasText: "YOU'RE IN" }).waitFor();
 

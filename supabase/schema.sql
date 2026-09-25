@@ -77,6 +77,9 @@ create table if not exists public.contests (
   updated_at       timestamptz not null default now()
 );
 
+-- added later: participation conditions shown on the giveaway (one per line)
+alter table public.contests add column if not exists conditions text;
+
 create index if not exists contests_created_idx on public.contests (created_at desc);
 create index if not exists contests_status_idx on public.contests (status, ends_at);
 

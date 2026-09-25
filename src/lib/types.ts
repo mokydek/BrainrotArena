@@ -33,6 +33,8 @@ export type Contest = {
   title: string;
   prize: string | null;
   image_url: string | null;
+  /** participation conditions, one per line (column added by migration; may be absent on old DBs) */
+  conditions?: string | null;
   max_participants: number | null;
   starts_at: string;
   ends_at: string;

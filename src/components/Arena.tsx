@@ -8,6 +8,7 @@ import StreamerModal from "@/components/StreamerModal";
 import ContestCard from "@/components/ContestCard";
 import ContestModal from "@/components/ContestModal";
 import { api } from "@/lib/api";
+import { DiscordIcon } from "@/components/icons";
 import type { Contest, Entry, Side, Streamer } from "@/lib/types";
 
 export type ArenaData = {
@@ -20,7 +21,7 @@ export type ArenaData = {
 
 const ENTRIES_SHOWN = 40;
 
-export default function Arena({ initial, contactUrl }: { initial: ArenaData; contactUrl: string | null }) {
+export default function Arena({ initial, contactUrl, discordUrl }: { initial: ArenaData; contactUrl: string | null; discordUrl: string }) {
   const { sb, t, player } = useApp();
   const [streamers, setStreamers] = useState<Streamer[]>(initial.streamers);
   const [contest, setContest] = useState<Contest | null>(initial.contest);
@@ -187,7 +188,7 @@ export default function Arena({ initial, contactUrl }: { initial: ArenaData; con
 
   return (
     <>
-      <TopBar />
+      <TopBar discordUrl={discordUrl} />
       <main className="arena">
         <div className="side-col left-col">
           <StreamerPanel
@@ -197,7 +198,17 @@ export default function Arena({ initial, contactUrl }: { initial: ArenaData; con
             onEdit={(s) => setStreamerModal({ mode: "edit", streamer: s })}
             onReorder={reorder}
             contactUrl={contactUrl}
-          />
+          >
+            <a className="discord-card" href={discordUrl} target="_blank" rel="noopener noreferrer" data-testid="discord-card">
+              <span className="dc-ic">
+                <DiscordIcon size={26} />
+              </span>
+              <span style={{ minWidth: 0 }}>
+                <span className="dc-title">{t("joinDiscord")}</span>
+                <span className="dc-sub">{t("discordSub")}</span>
+              </span>
+            </a>
+          </StreamerPanel>
         </div>
 
         <div className="contest-col">
@@ -257,6 +268,7 @@ export default function Arena({ initial, contactUrl }: { initial: ArenaData; con
       {contestModal && (
         <ContestModal
           contest={contestModal.contest}
+          discordUrl={discordUrl}
           onClose={() => setContestModal(null)}
           onSaved={(c) => {
             setContest(c);

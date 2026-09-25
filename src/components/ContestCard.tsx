@@ -27,6 +27,19 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 const GENERIC_TITLES = new Set(["brainrot giveaway", "розыгрыш брейнрота"]);
 
+/** Turns http(s) links inside a condition line into clickable links. */
+function linkify(text: string): React.ReactNode[] {
+  return text.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a key={i} href={part} target="_blank" rel="noopener noreferrer">
+        {part.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
+      </a>
+    ) : (
+      part
+    ),
+  );
+}
+
 export default function ContestCard({
   contest,
   entries,
@@ -49,6 +62,8 @@ export default function ContestCard({
   const { t, sb, now, player, isAdmin, toast, confirm, focusNickname } = useApp();
   const tick = useTick(now);
   const [joining, setJoining] = useState(false);
+  const [acceptedFor, setAcceptedFor] = useState<string | null>(null);
+  const [nudge, setNudge] = useState(0);
   const [reelFor, setReelFor] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<Set<string>>(() => new Set());
   const [confetti, setConfetti] = useState(0);
@@ -123,6 +138,11 @@ export default function ContestCard({
       focusNickname();
       return;
     }
+    if (conditionLines.length && acceptedFor !== contest.id) {
+      toast(t("acceptFirst"));
+      setNudge((n) => n + 1);
+      return;
+    }
     setJoining(true);
     const r = await api<{ entry: Entry }>(`/api/contest/${contest.id}/join`, { method: "POST" });
     setJoining(false);
@@ -170,6 +190,11 @@ export default function ContestCard({
   const iWon = Boolean(finished && player && contest?.winner_player_id === player.id);
   const showWinner = Boolean(finished && contest && revealed.has(contest.id));
   const reelNames = entries.map((e) => e.nickname);
+  const conditionLines = (contest?.conditions || "")
+    .split("\n")
+    .map((l) => l.replace(/^\s*(\d+[.)]|[-•*])\s*/, "").trim())
+    .filter(Boolean);
+  const showAccept = Boolean(running && !myEntry && conditionLines.length);
   // giveaway name shown under the timer (old contests may still carry the generic default title)
   const contestName = contest ? (GENERIC_TITLES.has(contest.title.trim().toLowerCase()) ? contest.prize : contest.title) : null;
 
@@ -296,6 +321,28 @@ export default function ContestCard({
           </div>
         )}
       </div>
+
+      {conditionLines.length > 0 && (
+        <div className="conditions" data-testid="conditions">
+          <div className="conditions-title">📋 {t("conditions")}</div>
+          <ol>
+            {conditionLines.map((l, i) => (
+              <li key={i}>{linkify(l)}</li>
+            ))}
+          </ol>
+          {showAccept && (
+            <label key={nudge} className={`cond-check${nudge ? " nudge" : ""}`}>
+              <input
+                type="checkbox"
+                checked={acceptedFor === contest?.id}
+                onChange={(e) => setAcceptedFor(e.target.checked ? contest!.id : null)}
+                data-testid="conditions-accept"
+              />
+              <span>{t("confirmConditions")}</span>
+            </label>
+          )}
+        </div>
+      )}
 
       <button className={`join-btn${myEntry ? " joined" : ""}`} onClick={join} disabled={joinDisabled} data-testid="join-btn">
         {joining ? "…" : joinLabel}

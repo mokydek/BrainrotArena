@@ -106,6 +106,15 @@ const en = {
   FILE_TOO_BIG: "Max 4 MB",
   error: "Something went wrong",
   saved: "Saved ✔",
+  joinDiscord: "JOIN OUR DISCORD",
+  discordSub: "Giveaways, news & chat",
+  conditions: "HOW TO JOIN",
+  conditionsLabel: "Participation conditions (one per line)",
+  conditionsPlaceholder: "Follow @streamer on TikTok\nJoin our Discord",
+  addDiscordLine: "Add Discord",
+  confirmConditions: "I've completed all conditions",
+  acceptFirst: "Complete the conditions and tick the box first",
+  MIGRATION_NEEDED: "Conditions were not saved: run the SQL update in Supabase (see README)",
   stLive: "LIVE",
   soon: "COMING SOON",
   stEnded: "ENDED",
@@ -244,6 +253,15 @@ const ru: Dict = {
   FILE_TOO_BIG: "Максимум 4 МБ",
   error: "Что-то пошло не так",
   saved: "Сохранено ✔",
+  joinDiscord: "ЗАХОДИ В НАШ DISCORD",
+  discordSub: "Розыгрыши, новости и общение",
+  conditions: "УСЛОВИЯ УЧАСТИЯ",
+  conditionsLabel: "Условия участия (каждое с новой строки)",
+  conditionsPlaceholder: "Подпишись на @streamer в TikTok\nЗайди в наш Discord",
+  addDiscordLine: "Добавить Discord",
+  confirmConditions: "Я выполнил все условия",
+  acceptFirst: "Сначала выполни условия и поставь галочку",
+  MIGRATION_NEEDED: "Условия не сохранились: выполни SQL-обновление в Supabase (см. README)",
   stLive: "ИДЁТ",
   soon: "СКОРО",
   stEnded: "ЗАВЕРШЁН",
@@ -274,10 +292,9 @@ const ru: Dict = {
 
 export const DICTS: Record<Lang, Dict> = { en, ru };
 
-export function detectLang(cookieLang: string | undefined, acceptLanguage: string | null): Lang {
-  if (cookieLang === "ru" || cookieLang === "en") return cookieLang;
-  const al = (acceptLanguage || "").toLowerCase();
-  return /^(ru|uk|be|kk)\b/.test(al) ? "ru" : "en";
+/** English is the default for everyone; Russian only when the visitor picked it (cookie). */
+export function detectLang(cookieLang: string | undefined, _acceptLanguage?: string | null): Lang {
+  return cookieLang === "ru" ? "ru" : "en";
 }
 
 export function tr(lang: Lang, key: string): string {
